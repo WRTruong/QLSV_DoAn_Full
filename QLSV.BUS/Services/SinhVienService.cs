@@ -2,7 +2,6 @@
 using System.Linq;
 using QLSV.DAL;
 
-
 namespace QLSV.BUS.Services
 {
     public class SinhVienService
@@ -16,6 +15,9 @@ namespace QLSV.BUS.Services
 
         public SinhVien GetById(int maSV) => _db.SinhVien.Find(maSV);
 
+        // Thêm alias để tương thích code cũ
+        public SinhVien GetByMaSV(int maSV) => GetById(maSV);
+
         public bool Add(SinhVien sv)
         {
             try { _db.SinhVien.Add(sv); _db.SaveChanges(); return true; }
@@ -26,14 +28,21 @@ namespace QLSV.BUS.Services
         {
             var old = _db.SinhVien.Find(sv.MaSV);
             if (old == null) return false;
+
             old.HoTen = sv.HoTen;
             old.GioiTinh = sv.GioiTinh;
             old.NgaySinh = sv.NgaySinh;
             old.Email = sv.Email;
             old.SDT = sv.SDT;
             old.DiaChi = sv.DiaChi;
+            old.QueQuan = sv.QueQuan;
+            old.TonGiao = sv.TonGiao;
+            old.HocLuc = sv.HocLuc;
+            old.HocPhi = sv.HocPhi;
+            old.TrangThai = sv.TrangThai;
             old.HinhAnh = sv.HinhAnh;
             old.MaLop = sv.MaLop;
+
             _db.SaveChanges();
             return true;
         }
