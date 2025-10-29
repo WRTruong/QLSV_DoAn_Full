@@ -1,0 +1,37 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36429.23 d17.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QLSV.GUI", "QLSV.GUI\QLSV.GUI.csproj", "{07FC479E-5E64-4918-BE54-2F3F6B5FF27C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QLSV.BUS", "QLSV.BUS\QLSV.BUS.csproj", "{DA2C87C1-9714-48B3-9194-A01D7DC25519}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QLSV.DAL", "QLSV.DAL\QLSV.DAL.csproj", "{681D5F27-6D0A-4E6A-AAEE-15E2A1BD9545}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{07FC479E-5E64-4918-BE54-2F3F6B5FF27C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{07FC479E-5E64-4918-BE54-2F3F6B5FF27C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{07FC479E-5E64-4918-BE54-2F3F6B5FF27C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{07FC479E-5E64-4918-BE54-2F3F6B5FF27C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DA2C87C1-9714-48B3-9194-A01D7DC25519}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DA2C87C1-9714-48B3-9194-A01D7DC25519}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DA2C87C1-9714-48B3-9194-A01D7DC25519}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DA2C87C1-9714-48B3-9194-A01D7DC25519}.Release|Any CPU.Build.0 = Release|Any CPU
+		{681D5F27-6D0A-4E6A-AAEE-15E2A1BD9545}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{681D5F27-6D0A-4E6A-AAEE-15E2A1BD9545}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{681D5F27-6D0A-4E6A-AAEE-15E2A1BD9545}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{681D5F27-6D0A-4E6A-AAEE-15E2A1BD9545}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {8D8ED421-4302-44BF-B768-05CF29DBA782}
+	EndGlobalSection
+EndGlobal
