@@ -11,6 +11,11 @@ namespace QLSV.BUS.Services
 
         public List<GiangVien> GetAll() => _db.GiangVien.ToList();
 
+        public GiangVien GetById(int maGV)
+        {
+            return _db.GiangVien.Find(maGV);
+        }
+
         public bool Add(GiangVien gv)
         {
             try { _db.GiangVien.Add(gv); _db.SaveChanges(); return true; }

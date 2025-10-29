@@ -26,9 +26,6 @@ namespace QLSV.DAL
 
         public int? SoTC { get; set; }
 
-        public int MaGV { get; set; }
-        public virtual GiangVien GiangVien { get; set; }
-
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<DangKyHoc> DangKyHoc { get; set; }

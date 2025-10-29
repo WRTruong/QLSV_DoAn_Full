@@ -1,9 +1,8 @@
 ﻿using System;
-using System.Drawing;
+using System.Linq;
 using System.Windows.Forms;
 using QLSV.BUS.Services;
 using QLSV.DAL;
-
 
 namespace QLSV.GUI
 {
@@ -15,98 +14,133 @@ namespace QLSV.GUI
         public frmSinhVien()
         {
             InitializeComponent();
-            LoadData();
-            LoadComboBox();
         }
 
-        private void LoadData()
+        private void frmSinhVien_Load(object sender, EventArgs e)
         {
-            dgvSinhVien.DataSource = null;
-            dgvSinhVien.DataSource = svService.GetAll();
+            LoadLop();
+            LoadSinhVien();
         }
 
-        private void LoadComboBox()
+        private void LoadLop()
         {
             cboLop.DataSource = lopService.GetAll();
             cboLop.DisplayMember = "TenLop";
             cboLop.ValueMember = "MaLop";
         }
 
+        private void LoadSinhVien()
+        {
+            dgvSinhVien.DataSource = null;
+            dgvSinhVien.DataSource = svService.GetAll()
+                .Select(sv => new
+                {
+                    sv.MaSV,
+                    sv.HoTen,
+                    GioiTinh = sv.GioiTinh == true ? "Nam" : "Nữ",
+                    sv.NgaySinh,
+                    sv.DiaChi,
+                    sv.QueQuan,
+                    sv.SDT,
+                    sv.Email,
+                    sv.MaLop, // thêm MaLop để sử dụng
+                    Lop = sv.Lop != null ? sv.Lop.TenLop : "",
+                    sv.HocPhi,
+                    sv.TrangThai
+                }).ToList();
+
+            dgvSinhVien.Columns["MaLop"].Visible = false; // ẩn cột khóa ngoại
+        }
+
+
+        private void dgvSinhVien_CellClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex < 0) return;
+
+            var row = dgvSinhVien.Rows[e.RowIndex];
+            txtHoTen.Text = row.Cells["HoTen"].Value?.ToString();
+            txtDiaChi.Text = row.Cells["DiaChi"].Value?.ToString();
+            txtEmail.Text = row.Cells["Email"].Value?.ToString();
+            txtSDT.Text = row.Cells["SDT"].Value?.ToString();
+            txtQueQuan.Text = row.Cells["QueQuan"].Value?.ToString();
+
+            // Sử dụng MaLop thay vì tên lớp
+            cboLop.SelectedValue = Convert.ToInt32(row.Cells["MaLop"].Value);
+
+            chkTrangThai.Checked = Convert.ToBoolean(row.Cells["TrangThai"].Value);
+        }
+
+
         private void btnThem_Click(object sender, EventArgs e)
         {
             var sv = new SinhVien
             {
                 HoTen = txtHoTen.Text,
-                NgaySinh = dtpNgaySinh.Value,
-                MaLop = (int)cboLop.SelectedValue,
+                DiaChi = txtDiaChi.Text,
                 Email = txtEmail.Text,
                 SDT = txtSDT.Text,
-                DiaChi = txtDiaChi.Text,
-                HinhAnh = picHinhAnh.ImageLocation
+                QueQuan = txtQueQuan.Text,
+                MaLop = Convert.ToInt32(cboLop.SelectedValue),
+                TrangThai = chkTrangThai.Checked
             };
 
             if (svService.Add(sv))
             {
-                MessageBox.Show("Thêm thành công!");
-                LoadData();
+                MessageBox.Show("Thêm sinh viên thành công!");
+                LoadSinhVien();
             }
-            else MessageBox.Show("Thêm thất bại!");
+            else
+            {
+                MessageBox.Show("Thêm thất bại!");
+            }
         }
 
         private void btnSua_Click(object sender, EventArgs e)
         {
             if (dgvSinhVien.CurrentRow == null) return;
 
-            var maSV = (int)dgvSinhVien.CurrentRow.Cells["MaSV"].Value;
+            int maSV = Convert.ToInt32(dgvSinhVien.CurrentRow.Cells["MaSV"].Value);
             var sv = svService.GetById(maSV);
+            if (sv == null) return;
+
             sv.HoTen = txtHoTen.Text;
-            sv.NgaySinh = dtpNgaySinh.Value;
-            sv.MaLop = (int)cboLop.SelectedValue;
+            sv.DiaChi = txtDiaChi.Text;
             sv.Email = txtEmail.Text;
             sv.SDT = txtSDT.Text;
-            sv.DiaChi = txtDiaChi.Text;
-            sv.HinhAnh = picHinhAnh.ImageLocation;
+            sv.QueQuan = txtQueQuan.Text;
+            sv.MaLop = Convert.ToInt32(cboLop.SelectedValue);
+            sv.TrangThai = chkTrangThai.Checked;
 
             if (svService.Update(sv))
             {
                 MessageBox.Show("Cập nhật thành công!");
-                LoadData();
+                LoadSinhVien();
             }
-            else MessageBox.Show("Cập nhật thất bại!");
+            else
+            {
+                MessageBox.Show("Cập nhật thất bại!");
+            }
         }
 
         private void btnXoa_Click(object sender, EventArgs e)
         {
             if (dgvSinhVien.CurrentRow == null) return;
 
-            var maSV = (int)dgvSinhVien.CurrentRow.Cells["MaSV"].Value;
+            int maSV = Convert.ToInt32(dgvSinhVien.CurrentRow.Cells["MaSV"].Value);
             if (svService.Delete(maSV))
             {
                 MessageBox.Show("Xóa thành công!");
-                LoadData();
+                LoadSinhVien();
             }
-            else MessageBox.Show("Xóa thất bại!");
+            else
+            {
+                MessageBox.Show("Xóa thất bại!");
+            }
         }
 
         private void btnRefresh_Click(object sender, EventArgs e)
         {
-            LoadData();
-            txtHoTen.Clear();
-            txtEmail.Clear();
-            txtSDT.Clear();
-            txtDiaChi.Clear();
-            dtpNgaySinh.Value = DateTime.Now;
-            picHinhAnh.Image = null;
-        }
-
-        private void btnChonAnh_Click(object sender, EventArgs e)
-        {
-            OpenFileDialog ofd = new OpenFileDialog();
-            ofd.Filter = "Image Files|*.jpg;*.png;*.gif";
-            if (ofd.ShowDialog() == DialogResult.OK)
-            {
-                picHinhAnh.ImageLocation = ofd.FileName;
-            }
+            LoadSinhVien();
         }
     }
 }

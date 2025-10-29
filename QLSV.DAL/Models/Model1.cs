@@ -10,6 +10,7 @@ namespace QLSV.DAL
         public Model1()
             : base("name=Model1")
         {
+            this.Configuration.LazyLoadingEnabled = true;
         }
 
         public virtual DbSet<DangKyHoc> DangKyHoc { get; set; }

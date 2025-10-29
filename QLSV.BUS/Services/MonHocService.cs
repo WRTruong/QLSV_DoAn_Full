@@ -12,17 +12,26 @@ namespace QLSV.BUS.Services
 
         public bool Add(MonHoc mh)
         {
-            try { _db.MonHoc.Add(mh); _db.SaveChanges(); return true; }
-            catch { return false; }
+            try
+            {
+                _db.MonHoc.Add(mh);
+                _db.SaveChanges();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         public bool Update(MonHoc mh)
         {
             var old = _db.MonHoc.Find(mh.MaMH);
             if (old == null) return false;
+
             old.TenMH = mh.TenMH;
             old.SoTC = mh.SoTC;
-            old.MaGV = mh.MaGV;
+
             _db.SaveChanges();
             return true;
         }
@@ -31,6 +40,7 @@ namespace QLSV.BUS.Services
         {
             var mh = _db.MonHoc.Find(maMH);
             if (mh == null) return false;
+
             _db.MonHoc.Remove(mh);
             _db.SaveChanges();
             return true;

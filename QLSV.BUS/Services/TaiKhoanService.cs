@@ -1,6 +1,6 @@
 ﻿using System.Linq;
 using QLSV.DAL;
-
+using System.Data.Entity;
 
 namespace QLSV.BUS.Services
 {
@@ -10,7 +10,9 @@ namespace QLSV.BUS.Services
 
         public TaiKhoan DangNhap(string username, string password)
         {
-            return _db.TaiKhoan.FirstOrDefault(t => t.Username == username && t.Password == password);
+            return _db.TaiKhoan
+                      .Include(t => t.Quyen) 
+                      .FirstOrDefault(t => t.Username == username && t.Password == password);
         }
 
         public bool DoiMatKhau(int maTK, string matKhauMoi)

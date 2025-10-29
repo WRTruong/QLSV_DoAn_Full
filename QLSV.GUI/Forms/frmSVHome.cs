@@ -12,6 +12,7 @@ namespace QLSV.GUI
         private readonly SinhVienService svService = new SinhVienService();
         private readonly DangKyHocService dkService = new DangKyHocService();
         private readonly DiemService diemService = new DiemService();
+        private readonly LichHocService lhService = new LichHocService();
 
         private SinhVien sinhVien;
 
@@ -23,8 +24,21 @@ namespace QLSV.GUI
 
         private void frmSVHome_Load(object sender, EventArgs e)
         {
-            // Lấy thông tin sinh viên từ tài khoản
-            sinhVien = svService.GetById(_taiKhoan.MaSV ?? 0);
+            if (!_taiKhoan.MaSV.HasValue)
+            {
+                MessageBox.Show("Tài khoản này chưa gán sinh viên!");
+                this.Close();
+                return;
+            }
+
+            sinhVien = svService.GetById(_taiKhoan.MaSV.Value);
+            if (sinhVien == null)
+            {
+                MessageBox.Show("Không tìm thấy sinh viên!");
+                this.Close();
+                return;
+            }
+
             LoadThongTinCaNhan();
             LoadLichHoc();
             LoadMonHocDangKy();
@@ -34,23 +48,17 @@ namespace QLSV.GUI
         #region Thông tin cá nhân
         private void LoadThongTinCaNhan()
         {
-            if (sinhVien == null) return;
-
             txtHoTen.Text = sinhVien.HoTen;
             txtDiaChi.Text = sinhVien.DiaChi;
             txtEmail.Text = sinhVien.Email;
             txtSDT.Text = sinhVien.SDT;
             txtQueQuan.Text = sinhVien.QueQuan;
             if (!string.IsNullOrEmpty(sinhVien.HinhAnh))
-            {
                 pbHinhAnh.ImageLocation = sinhVien.HinhAnh;
-            }
         }
 
         private void btnCapNhat_Click(object sender, EventArgs e)
         {
-            if (sinhVien == null) return;
-
             sinhVien.DiaChi = txtDiaChi.Text;
             sinhVien.Email = txtEmail.Text;
             sinhVien.SDT = txtSDT.Text;
@@ -65,52 +73,62 @@ namespace QLSV.GUI
         #region Lịch học
         private void LoadLichHoc()
         {
-            if (sinhVien == null) return;
+            var lich = (from dk in dkService.GetBySinhVien(sinhVien.MaSV)
+                        join lh in lhService.GetAll()
+                            on new { dk.MaMH, dk.MaHK } equals new { lh.MaMH, lh.MaHK }
+                        select new
+                        {
+                            lh.Thu,
+                            lh.TietBatDau,
+                            lh.SoTiet,
+                            TenMonHoc = lh.MonHoc != null ? lh.MonHoc.TenMH : "",
+                            GiangVien = lh.GiangVien != null ? lh.GiangVien.HoTen : ""
+                        }).ToList();
 
-            var lich = dkService.GetLichHocByMaSV(sinhVien.MaSV);
-            dgvLichHoc.DataSource = lich.Select(l => new
-            {
-                Lop = l.Lop?.TenLop,
-                MonHoc = l.MonHoc?.TenMH,
-                GiangVien = l.GiangVien?.HoTen,
-                HocKy = l.HocKy?.TenHK,
-                l.Thu,
-                l.TietBatDau,
-                l.SoTiet
-            }).ToList();
+            dgvLichHoc.DataSource = lich;
         }
         #endregion
 
         #region Đăng ký môn học
         private void LoadMonHocDangKy()
         {
-            if (sinhVien == null) return;
+            // Lấy học kỳ hiện tại
+            var hocKyHienTai = lhService.GetAll()
+                                         .Select(l => l.HocKy)
+                                         .OrderByDescending(hk => hk.MaHK)
+                                         .FirstOrDefault();
+            if (hocKyHienTai == null) return;
 
-            var dsMH = dkService.GetMonHocChuaDangKy(sinhVien.MaSV);
-            dgvMonHoc.DataSource = dsMH.Select(m => new
-            {
-                m.MaMH,
-                m.TenMH,
-                m.SoTC,
-                GiangVien = m.GiangVien?.HoTen
-            }).ToList();
+            var monHocChuaDangKy = dkService.GetMonHocChuaDangKy(sinhVien.MaSV);
+
+            var ds = (from m in monHocChuaDangKy
+                      join lh in lhService.GetAll()
+                          on m.MaMH equals lh.MaMH
+                      where lh.MaHK == hocKyHienTai.MaHK
+                      select new
+                      {
+                          m.MaMH,
+                          m.TenMH,
+                          GiangVien = lh.GiangVien != null ? lh.GiangVien.HoTen : ""
+                      }).ToList();
+
+            dgvMonHoc.DataSource = ds;
         }
 
         private void btnDangKyMon_Click(object sender, EventArgs e)
         {
             if (dgvMonHoc.CurrentRow == null) return;
-
             int maMH = (int)dgvMonHoc.CurrentRow.Cells["MaMH"].Value;
-            bool kq = dkService.DangKyMonHoc(sinhVien.MaSV, maMH);
-            if (kq)
+
+            if (dkService.DangKyMonHoc(sinhVien.MaSV, maMH))
             {
-                MessageBox.Show("Đăng ký môn học thành công!");
+                MessageBox.Show("Đăng ký thành công!");
                 LoadMonHocDangKy();
                 LoadLichHoc();
             }
             else
             {
-                MessageBox.Show("Đăng ký thất bại hoặc đã đăng ký môn này!");
+                MessageBox.Show("Đăng ký thất bại!");
             }
         }
         #endregion
@@ -118,12 +136,10 @@ namespace QLSV.GUI
         #region Xem điểm
         private void LoadDiem()
         {
-            if (sinhVien == null) return;
-
-            var dsDiem = diemService.GetBySinhVien(sinhVien.MaSV);
-            dgvDiem.DataSource = dsDiem.Select(d => new
+            var diem = diemService.GetBySinhVien(sinhVien.MaSV);
+            dgvDiem.DataSource = diem.Select(d => new
             {
-                MonHoc = d.MonHoc?.TenMH,
+                TenMonHoc = d.MonHoc != null ? d.MonHoc.TenMH : "",
                 d.DiemQT,
                 d.DiemCK,
                 d.DiemTong

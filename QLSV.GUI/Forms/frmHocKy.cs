@@ -82,7 +82,7 @@ namespace QLSV.GUI
             if (dgvHocKy.CurrentRow == null) return;
 
             txtTenHocKy.Text = dgvHocKy.CurrentRow.Cells["TenHK"].Value.ToString();
-            txtMoTa.Text = dgvHocKy.CurrentRow.Cells["MoTa"].Value?.ToString();
+       
         }
     }
 }

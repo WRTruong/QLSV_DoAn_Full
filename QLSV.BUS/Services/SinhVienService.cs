@@ -8,22 +8,40 @@ namespace QLSV.BUS.Services
     {
         private readonly Model1 _db = new Model1();
 
-        public List<SinhVien> GetAll() => _db.SinhVien.ToList();
-
-        public List<SinhVien> GetByLop(int maLop) =>
-            _db.SinhVien.Where(sv => sv.MaLop == maLop).ToList();
-
-        public SinhVien GetById(int maSV) => _db.SinhVien.Find(maSV);
-
-        // Thêm alias để tương thích code cũ
-        public SinhVien GetByMaSV(int maSV) => GetById(maSV);
-
-        public bool Add(SinhVien sv)
+        // 1. Lấy tất cả sinh viên
+        public List<SinhVien> GetAll()
         {
-            try { _db.SinhVien.Add(sv); _db.SaveChanges(); return true; }
-            catch { return false; }
+            return _db.SinhVien.ToList();
         }
 
+        // 2. Lấy sinh viên theo lớp
+        public List<SinhVien> GetByLop(int maLop)
+        {
+            return _db.SinhVien.Where(sv => sv.MaLop == maLop).ToList();
+        }
+
+        // 3. Lấy sinh viên theo MaSV
+        public SinhVien GetById(int maSV)
+        {
+            return _db.SinhVien.Find(maSV);
+        }
+
+        // 4. Thêm sinh viên mới
+        public bool Add(SinhVien sv)
+        {
+            try
+            {
+                _db.SinhVien.Add(sv);
+                _db.SaveChanges();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        // 5. Cập nhật sinh viên
         public bool Update(SinhVien sv)
         {
             var old = _db.SinhVien.Find(sv.MaSV);
@@ -47,10 +65,12 @@ namespace QLSV.BUS.Services
             return true;
         }
 
+        // 6. Xóa sinh viên
         public bool Delete(int maSV)
         {
             var sv = _db.SinhVien.Find(maSV);
             if (sv == null) return false;
+
             _db.SinhVien.Remove(sv);
             _db.SaveChanges();
             return true;

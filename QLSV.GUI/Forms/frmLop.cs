@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Windows.Forms;
 using QLSV.BUS.Services;
 using QLSV.DAL;
@@ -13,21 +14,26 @@ namespace QLSV.GUI
         public frmLop()
         {
             InitializeComponent();
-            LoadComboKhoa();
+            LoadComboBox();
             LoadData();
         }
 
-        private void LoadComboKhoa()
+        private void LoadComboBox()
         {
-            cbKhoa.DataSource = khoaService.GetAll();
-            cbKhoa.DisplayMember = "TenKhoa";
-            cbKhoa.ValueMember = "MaKhoa";
+            cboKhoa.DataSource = khoaService.GetAll();
+            cboKhoa.DisplayMember = "TenKhoa";
+            cboKhoa.ValueMember = "MaKhoa";
         }
 
         private void LoadData()
         {
-            dgvLop.DataSource = null;
-            dgvLop.DataSource = lopService.GetAll();
+            dgvLop.DataSource = lopService.GetAll()
+                .Select(l => new
+                {
+                    l.MaLop,
+                    l.TenLop,
+                    TenKhoa = l.Khoa.TenKhoa
+                }).ToList();
         }
 
         private void btnThem_Click(object sender, EventArgs e)
@@ -35,63 +41,53 @@ namespace QLSV.GUI
             var lop = new Lop
             {
                 TenLop = txtTenLop.Text,
-                MaKhoa = (int)cbKhoa.SelectedValue
+                MaKhoa = (int)cboKhoa.SelectedValue
             };
-
             if (lopService.Add(lop))
             {
                 MessageBox.Show("Thêm thành công!");
                 LoadData();
             }
-            else MessageBox.Show("Thêm thất bại!");
         }
 
         private void btnSua_Click(object sender, EventArgs e)
         {
             if (dgvLop.CurrentRow == null) return;
 
-            var maLop = (int)dgvLop.CurrentRow.Cells["MaLop"].Value;
-            var lop = new Lop
-            {
-                MaLop = maLop,
-                TenLop = txtTenLop.Text,
-                MaKhoa = (int)cbKhoa.SelectedValue
-            };
-
+            int maLop = (int)dgvLop.CurrentRow.Cells["MaLop"].Value;
+            var lop = lopService.GetById(maLop);
+            lop.TenLop = txtTenLop.Text;
+            lop.MaKhoa = (int)cboKhoa.SelectedValue;
             if (lopService.Update(lop))
             {
-                MessageBox.Show("Cập nhật thành công!");
+                MessageBox.Show("Sửa thành công!");
                 LoadData();
             }
-            else MessageBox.Show("Cập nhật thất bại!");
         }
 
         private void btnXoa_Click(object sender, EventArgs e)
         {
             if (dgvLop.CurrentRow == null) return;
-
-            var maLop = (int)dgvLop.CurrentRow.Cells["MaLop"].Value;
+            int maLop = (int)dgvLop.CurrentRow.Cells["MaLop"].Value;
             if (lopService.Delete(maLop))
             {
                 MessageBox.Show("Xóa thành công!");
                 LoadData();
             }
-            else MessageBox.Show("Xóa thất bại!");
         }
 
         private void btnRefresh_Click(object sender, EventArgs e)
         {
             LoadData();
-            txtTenLop.Clear();
-            cbKhoa.SelectedIndex = 0;
         }
 
-        private void dgvLop_SelectionChanged(object sender, EventArgs e)
+        private void dgvLop_CellClick(object sender, DataGridViewCellEventArgs e)
         {
             if (dgvLop.CurrentRow == null) return;
 
+            txtMaLop.Text = dgvLop.CurrentRow.Cells["MaLop"].Value.ToString();
             txtTenLop.Text = dgvLop.CurrentRow.Cells["TenLop"].Value.ToString();
-            cbKhoa.SelectedValue = (int)dgvLop.CurrentRow.Cells["MaKhoa"].Value;
+            cboKhoa.SelectedValue = lopService.GetById((int)dgvLop.CurrentRow.Cells["MaLop"].Value).MaKhoa;
         }
     }
 }

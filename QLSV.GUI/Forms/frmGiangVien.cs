@@ -1,8 +1,8 @@
 ﻿using System;
+using System.Linq;
 using System.Windows.Forms;
 using QLSV.BUS.Services;
 using QLSV.DAL;
-
 
 namespace QLSV.GUI
 {
@@ -18,8 +18,13 @@ namespace QLSV.GUI
 
         private void LoadData()
         {
-            dgvGiangVien.DataSource = null;
-            dgvGiangVien.DataSource = gvService.GetAll();
+            dgvGV.DataSource = gvService.GetAll()
+                .Select(gv => new
+                {
+                    gv.MaGV,
+                    gv.HoTen,
+                    gv.Email,
+                }).ToList();
         }
 
         private void btnThem_Click(object sender, EventArgs e)
@@ -27,76 +32,52 @@ namespace QLSV.GUI
             var gv = new GiangVien
             {
                 HoTen = txtHoTen.Text,
-                GioiTinh = rbNam.Checked,
-                NgaySinh = dtpNgaySinh.Value,
                 Email = txtEmail.Text,
-                DiaChi = txtDiaChi.Text
             };
-
             if (gvService.Add(gv))
             {
                 MessageBox.Show("Thêm thành công!");
                 LoadData();
             }
-            else MessageBox.Show("Thêm thất bại!");
         }
 
         private void btnSua_Click(object sender, EventArgs e)
         {
-            if (dgvGiangVien.CurrentRow == null) return;
-
-            var maGV = (int)dgvGiangVien.CurrentRow.Cells["MaGV"].Value;
-            var gv = new GiangVien
-            {
-                MaGV = maGV,
-                HoTen = txtHoTen.Text,
-                GioiTinh = rbNam.Checked,
-                NgaySinh = dtpNgaySinh.Value,
-                Email = txtEmail.Text,
-                DiaChi = txtDiaChi.Text
-            };
-
+            if (dgvGV.CurrentRow == null) return;
+            int maGV = (int)dgvGV.CurrentRow.Cells["MaGV"].Value;
+            var gv = gvService.GetById(maGV);
+            gv.HoTen = txtHoTen.Text;
+            gv.Email = txtEmail.Text;
             if (gvService.Update(gv))
             {
-                MessageBox.Show("Cập nhật thành công!");
+                MessageBox.Show("Sửa thành công!");
                 LoadData();
             }
-            else MessageBox.Show("Cập nhật thất bại!");
         }
 
         private void btnXoa_Click(object sender, EventArgs e)
         {
-            if (dgvGiangVien.CurrentRow == null) return;
-
-            var maGV = (int)dgvGiangVien.CurrentRow.Cells["MaGV"].Value;
+            if (dgvGV.CurrentRow == null) return;
+            int maGV = (int)dgvGV.CurrentRow.Cells["MaGV"].Value;
             if (gvService.Delete(maGV))
             {
                 MessageBox.Show("Xóa thành công!");
                 LoadData();
             }
-            else MessageBox.Show("Xóa thất bại!");
         }
 
         private void btnRefresh_Click(object sender, EventArgs e)
         {
             LoadData();
-            txtHoTen.Clear();
-            txtEmail.Clear();
-            txtSDT.Clear();
-            txtDiaChi.Clear();
-            rbNam.Checked = true;
         }
 
-        private void dgvGiangVien_SelectionChanged(object sender, EventArgs e)
+        private void dgvGV_CellClick(object sender, DataGridViewCellEventArgs e)
         {
-            if (dgvGiangVien.CurrentRow == null) return;
+            if (dgvGV.CurrentRow == null) return;
+            txtMaGV.Text = dgvGV.CurrentRow.Cells["MaGV"].Value.ToString();
+            txtHoTen.Text = dgvGV.CurrentRow.Cells["HoTen"].Value.ToString();
+            txtEmail.Text = dgvGV.CurrentRow.Cells["Email"].Value.ToString();
 
-            txtHoTen.Text = dgvGiangVien.CurrentRow.Cells["HoTen"].Value.ToString();
-            txtEmail.Text = dgvGiangVien.CurrentRow.Cells["Email"].Value.ToString();
-            txtSDT.Text = dgvGiangVien.CurrentRow.Cells["SDT"].Value.ToString();
-            txtDiaChi.Text = dgvGiangVien.CurrentRow.Cells["DiaChi"].Value.ToString();
-            rbNam.Checked = (bool)dgvGiangVien.CurrentRow.Cells["GioiTinh"].Value;
-            rbNu.Checked = !rbNam.Checked;
         }
     }
 }

@@ -1,7 +1,7 @@
 ﻿using System;
-using System.Linq;
 using System.Windows.Forms;
-using QLSV.BUS.Services; 
+using QLSV.BUS.Services;
+using QLSV.DAL;
 
 namespace QLSV.GUI
 {
@@ -26,18 +26,24 @@ namespace QLSV.GUI
             }
 
             var tk = tkService.DangNhap(username, password);
+
             if (tk != null)
             {
-                // Kiểm tra quyền, mở form tương ứng
-                if (tk.Quyen.Any(q => q.TenQuyen == "SinhVien"))
+                // Sử dụng LoaiTK để phân biệt sinh viên hay GV/Admin
+                if (tk.LoaiTK == "SinhVien")
                 {
-                    new frmSVHome(tk).Show(); // Form sinh viên
+                    // Mở form sinh viên
+                    frmSVHome svHome = new frmSVHome(tk);
+                    svHome.Show();
                 }
                 else
                 {
-                    new frmMain(tk).Show(); // Form Admin/GV
+                    // Mở form Admin/GV
+                    frmMain main = new frmMain(tk);
+                    main.Show();
                 }
-                this.Hide();
+
+                this.Hide(); // Ẩn form đăng nhập
             }
             else
             {

@@ -69,5 +69,12 @@ namespace QLSV.BUS.Services
                     where dh.MaSV == maSV
                     select lh).ToList();
         }
+        public HocKy GetHocKyHienTai()
+        {
+            return _db.HocKy.OrderByDescending(hk => hk.MaHK).FirstOrDefault();
+        }
+
+        public List<LichHoc> GetAllLichHoc() => _db.LichHoc.ToList();
+
     }
 }

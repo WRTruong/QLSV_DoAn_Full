@@ -19,68 +19,83 @@ namespace QLSV.GUI
         {
             dgvKhoa.DataSource = null;
             dgvKhoa.DataSource = khoaService.GetAll();
+            dgvKhoa.ClearSelection();
         }
 
         private void btnThem_Click(object sender, EventArgs e)
         {
             var khoa = new Khoa
             {
-                TenKhoa = txtTenKhoa.Text,
+                TenKhoa = txtTenKhoa.Text.Trim()
             };
+
+            if (string.IsNullOrEmpty(khoa.TenKhoa))
+            {
+                MessageBox.Show("Tên khoa không được để trống!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
 
             if (khoaService.Add(khoa))
             {
-                MessageBox.Show("Thêm thành công!");
+                MessageBox.Show("Thêm khoa thành công!");
                 LoadData();
+                txtTenKhoa.Clear();
             }
-            else MessageBox.Show("Thêm thất bại!");
+            else
+                MessageBox.Show("Thêm thất bại!");
         }
 
         private void btnSua_Click(object sender, EventArgs e)
         {
             if (dgvKhoa.CurrentRow == null) return;
 
-            var maKhoa = (int)dgvKhoa.CurrentRow.Cells["MaKhoa"].Value;
-            var khoa = new Khoa
+            int maKhoa = (int)dgvKhoa.CurrentRow.Cells["MaKhoa"].Value;
+            var khoa = khoaService.GetById(maKhoa);
+            if (khoa == null) return;
+
+            khoa.TenKhoa = txtTenKhoa.Text.Trim();
+            if (string.IsNullOrEmpty(khoa.TenKhoa))
             {
-                MaKhoa = maKhoa,
-                TenKhoa = txtTenKhoa.Text,
-            };
+                MessageBox.Show("Tên khoa không được để trống!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
 
             if (khoaService.Update(khoa))
             {
                 MessageBox.Show("Cập nhật thành công!");
                 LoadData();
             }
-            else MessageBox.Show("Cập nhật thất bại!");
+            else
+                MessageBox.Show("Cập nhật thất bại!");
         }
 
         private void btnXoa_Click(object sender, EventArgs e)
         {
             if (dgvKhoa.CurrentRow == null) return;
 
-            var maKhoa = (int)dgvKhoa.CurrentRow.Cells["MaKhoa"].Value;
-            if (khoaService.Delete(maKhoa))
+            int maKhoa = (int)dgvKhoa.CurrentRow.Cells["MaKhoa"].Value;
+            if (MessageBox.Show("Bạn có chắc muốn xóa khoa này?", "Xác nhận", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
             {
-                MessageBox.Show("Xóa thành công!");
-                LoadData();
+                if (khoaService.Delete(maKhoa))
+                {
+                    MessageBox.Show("Xóa thành công!");
+                    LoadData();
+                }
+                else
+                    MessageBox.Show("Xóa thất bại!");
             }
-            else MessageBox.Show("Xóa thất bại!");
         }
 
         private void btnRefresh_Click(object sender, EventArgs e)
         {
             LoadData();
             txtTenKhoa.Clear();
-            txtMoTa.Clear();
         }
 
         private void dgvKhoa_SelectionChanged(object sender, EventArgs e)
         {
-            if (dgvKhoa.CurrentRow == null) return;
-
-            txtTenKhoa.Text = dgvKhoa.CurrentRow.Cells["TenKhoa"].Value.ToString();
-            txtMoTa.Text = dgvKhoa.CurrentRow.Cells["MoTa"].Value.ToString();
+            if (dgvKhoa.CurrentRow != null)
+                txtTenKhoa.Text = dgvKhoa.CurrentRow.Cells["TenKhoa"].Value.ToString();
         }
     }
 }

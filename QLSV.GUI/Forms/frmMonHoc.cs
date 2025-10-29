@@ -27,7 +27,6 @@ namespace QLSV.GUI
             var mh = new MonHoc
             {
                 TenMH = txtTenMH.Text,
-                MaGV = (int)cboGiangVien.SelectedValue,
                 SoTC = (int)nudSoTC.Value
             };
 
@@ -48,7 +47,6 @@ namespace QLSV.GUI
             {
                 MaMH = maMH,
                 TenMH = txtTenMH.Text,
-                MaGV = (int)cboGiangVien.SelectedValue,
                 SoTC = (int)nudSoTC.Value
             };
 
@@ -86,7 +84,7 @@ namespace QLSV.GUI
 
             txtTenMH.Text = dgvMonHoc.CurrentRow.Cells["TenMH"].Value.ToString();
             nudSoTC.Value = Convert.ToDecimal(dgvMonHoc.CurrentRow.Cells["SoTC"].Value);
-            cboGiangVien.SelectedValue = (int)dgvMonHoc.CurrentRow.Cells["MaGV"].Value;
+           
         }
     }
 }

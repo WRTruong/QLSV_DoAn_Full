@@ -2,7 +2,6 @@
 using System.Linq;
 using QLSV.DAL;
 
-
 namespace QLSV.BUS.Services
 {
     public class KhoaService
@@ -10,6 +9,8 @@ namespace QLSV.BUS.Services
         private readonly Model1 _db = new Model1();
 
         public List<Khoa> GetAll() => _db.Khoa.ToList();
+
+        public Khoa GetById(int maKhoa) => _db.Khoa.Find(maKhoa);
 
         public bool Add(Khoa khoa)
         {

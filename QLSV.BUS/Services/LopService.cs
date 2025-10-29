@@ -10,8 +10,7 @@ namespace QLSV.BUS.Services
 
         public List<Lop> GetAll() => _db.Lop.ToList();
 
-        public List<Lop> GetByKhoa(int maKhoa) =>
-            _db.Lop.Where(x => x.MaKhoa == maKhoa).ToList();
+        public Lop GetById(int maLop) => _db.Lop.Find(maLop);
 
         public bool Add(Lop lop)
         {
@@ -31,9 +30,9 @@ namespace QLSV.BUS.Services
 
         public bool Delete(int maLop)
         {
-            var l = _db.Lop.Find(maLop);
-            if (l == null) return false;
-            _db.Lop.Remove(l);
+            var lop = _db.Lop.Find(maLop);
+            if (lop == null) return false;
+            _db.Lop.Remove(lop);
             _db.SaveChanges();
             return true;
         }

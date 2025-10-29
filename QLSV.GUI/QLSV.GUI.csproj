@@ -134,8 +134,23 @@
     <Compile Include="Forms\frmThongBao.Designer.cs">
       <DependentUpon>frmThongBao.cs</DependentUpon>
     </Compile>
+    <Compile Include="frmKhoaTest.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmKhoaTest.Designer.cs">
+      <DependentUpon>frmKhoaTest.cs</DependentUpon>
+    </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="Forms\frmGiangVien.resx">
+      <DependentUpon>frmGiangVien.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\frmMonHoc.resx">
+      <DependentUpon>frmMonHoc.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\frmSinhVien.resx">
+      <DependentUpon>frmSinhVien.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
@@ -168,6 +183,9 @@
       <Project>{681d5f27-6d0a-4e6a-aaee-15e2a1bd9545}</Project>
       <Name>QLSV.DAL</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Images\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
