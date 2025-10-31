@@ -2,15 +2,49 @@ using System;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
 using System.Linq;
+using System.Data.SqlClient;
 
 namespace QLSV.DAL
 {
     public partial class Model1 : DbContext
     {
         public Model1()
-            : base("name=Model1")
+            : base(GetConnectionString())
         {
             this.Configuration.LazyLoadingEnabled = true;
+        }
+
+        // Danh sách server kh? d?ng c?a nhóm b?n
+        private static string GetConnectionString()
+        {
+            string[] servers = new string[]
+            {
+                @"Hungdeptrai\SQLEXPRESS03",  // Máy 1
+                @"LAPTOP-NPGB1T0P"            // Máy 2
+            };
+
+            string database = "QLSV_DoAn";
+            string connectionString = "";
+
+            foreach (var server in servers)
+            {
+                try
+                {
+                    connectionString = $"Data Source={server};Initial Catalog={database};Integrated Security=True;TrustServerCertificate=True;MultipleActiveResultSets=True;";
+                    using (var conn = new SqlConnection(connectionString))
+                    {
+                        conn.Open(); // test k?t n?i
+                        Console.WriteLine($"? K?t n?i thành công ??n {server}");
+                        return connectionString;
+                    }
+                }
+                catch
+                {
+                    continue; // th? server k? ti?p
+                }
+            }
+
+            throw new Exception("? Không th? k?t n?i ??n SQL Server nào. Ki?m tra l?i server name ho?c database!");
         }
 
         public virtual DbSet<DangKyHoc> DangKyHoc { get; set; }
