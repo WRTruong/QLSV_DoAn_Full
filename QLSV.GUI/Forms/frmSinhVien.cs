@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using QLSV.BUS.Services;
@@ -10,6 +11,7 @@ namespace QLSV.GUI
     {
         private readonly SinhVienService svService = new SinhVienService();
         private readonly LopService lopService = new LopService();
+        private string currentImagePath = null;
 
         public frmSinhVien()
         {
@@ -43,15 +45,14 @@ namespace QLSV.GUI
                     sv.QueQuan,
                     sv.SDT,
                     sv.Email,
-                    sv.MaLop, // thêm MaLop để sử dụng
+                    sv.MaLop,
                     Lop = sv.Lop != null ? sv.Lop.TenLop : "",
-                    sv.HocPhi,
+                    sv.HinhAnh,
                     sv.TrangThai
                 }).ToList();
 
-            dgvSinhVien.Columns["MaLop"].Visible = false; // ẩn cột khóa ngoại
+            dgvSinhVien.Columns["MaLop"].Visible = false;
         }
-
 
         private void dgvSinhVien_CellClick(object sender, DataGridViewCellEventArgs e)
         {
@@ -64,15 +65,84 @@ namespace QLSV.GUI
             txtSDT.Text = row.Cells["SDT"].Value?.ToString();
             txtQueQuan.Text = row.Cells["QueQuan"].Value?.ToString();
 
-            // Sử dụng MaLop thay vì tên lớp
-            cboLop.SelectedValue = Convert.ToInt32(row.Cells["MaLop"].Value);
+            string gioiTinh = row.Cells["GioiTinh"].Value?.ToString();
+            rdNam.Checked = gioiTinh == "Nam";
+            rdNu.Checked = gioiTinh == "Nữ";
 
+            cboLop.SelectedValue = Convert.ToInt32(row.Cells["MaLop"].Value);
             chkTrangThai.Checked = Convert.ToBoolean(row.Cells["TrangThai"].Value);
+
+            // Hiển thị ảnh
+            string hinhAnh = row.Cells["HinhAnh"].Value?.ToString();
+            if (!string.IsNullOrEmpty(hinhAnh))
+            {
+                string fullPath = Path.Combine(Application.StartupPath, "Images", hinhAnh);
+                if (File.Exists(fullPath))
+                {
+                    pbHinhAnh.ImageLocation = fullPath;
+                    currentImagePath = fullPath;
+                }
+                else
+                {
+                    pbHinhAnh.Image = null;
+                    currentImagePath = null;
+                }
+            }
+            else
+            {
+                pbHinhAnh.Image = null;
+                currentImagePath = null;
+            }
+        }
+
+        private void btnChonAnh_Click(object sender, EventArgs e)
+        {
+            using (OpenFileDialog ofd = new OpenFileDialog())
+            {
+                ofd.Filter = "Image Files|*.jpg;*.jpeg;*.png;*.bmp;*.webp";
+                ofd.Title = "Chọn ảnh sinh viên";
+
+                if (ofd.ShowDialog() == DialogResult.OK)
+                {
+                    pbHinhAnh.ImageLocation = ofd.FileName;
+                    currentImagePath = ofd.FileName;
+                }
+            }
+        }
+
+        private string SaveImageToFolder(string sourcePath)
+        {
+            if (string.IsNullOrEmpty(sourcePath) || !File.Exists(sourcePath))
+                return null;
+
+            // 🔧 Lấy đường dẫn đến thư mục Images trong GUI (ra khỏi bin\Debug)
+            string projectRoot = Directory.GetParent(Application.StartupPath).Parent.FullName;
+            string imagesFolder = Path.Combine(projectRoot, "Images");
+
+            if (!Directory.Exists(imagesFolder))
+                Directory.CreateDirectory(imagesFolder);
+
+            string fileName = Path.GetFileName(sourcePath);
+            string destPath = Path.Combine(imagesFolder, fileName);
+
+            try
+            {
+                File.Copy(sourcePath, destPath, true);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Lỗi lưu ảnh: " + ex.Message);
+                return null;
+            }
+
+            return fileName; // Chỉ lưu tên file trong DB
         }
 
 
         private void btnThem_Click(object sender, EventArgs e)
         {
+            string fileName = SaveImageToFolder(currentImagePath);
+
             var sv = new SinhVien
             {
                 HoTen = txtHoTen.Text,
@@ -80,18 +150,20 @@ namespace QLSV.GUI
                 Email = txtEmail.Text,
                 SDT = txtSDT.Text,
                 QueQuan = txtQueQuan.Text,
+                GioiTinh = rdNam.Checked,
                 MaLop = Convert.ToInt32(cboLop.SelectedValue),
-                TrangThai = chkTrangThai.Checked
+                TrangThai = chkTrangThai.Checked,
+                HinhAnh = fileName
             };
 
             if (svService.Add(sv))
             {
-                MessageBox.Show("Thêm sinh viên thành công!");
+                MessageBox.Show("✅ Thêm sinh viên thành công!");
                 LoadSinhVien();
             }
             else
             {
-                MessageBox.Show("Thêm thất bại!");
+                MessageBox.Show("❌ Thêm thất bại!");
             }
         }
 
@@ -103,22 +175,26 @@ namespace QLSV.GUI
             var sv = svService.GetById(maSV);
             if (sv == null) return;
 
+            string fileName = SaveImageToFolder(currentImagePath);
+
             sv.HoTen = txtHoTen.Text;
             sv.DiaChi = txtDiaChi.Text;
             sv.Email = txtEmail.Text;
             sv.SDT = txtSDT.Text;
             sv.QueQuan = txtQueQuan.Text;
+            sv.GioiTinh = rdNam.Checked;
             sv.MaLop = Convert.ToInt32(cboLop.SelectedValue);
             sv.TrangThai = chkTrangThai.Checked;
+            sv.HinhAnh = fileName;
 
             if (svService.Update(sv))
             {
-                MessageBox.Show("Cập nhật thành công!");
+                MessageBox.Show("✅ Cập nhật thành công!");
                 LoadSinhVien();
             }
             else
             {
-                MessageBox.Show("Cập nhật thất bại!");
+                MessageBox.Show("❌ Cập nhật thất bại!");
             }
         }
 
@@ -129,12 +205,12 @@ namespace QLSV.GUI
             int maSV = Convert.ToInt32(dgvSinhVien.CurrentRow.Cells["MaSV"].Value);
             if (svService.Delete(maSV))
             {
-                MessageBox.Show("Xóa thành công!");
+                MessageBox.Show("🗑️ Xóa thành công!");
                 LoadSinhVien();
             }
             else
             {
-                MessageBox.Show("Xóa thất bại!");
+                MessageBox.Show("❌ Xóa thất bại!");
             }
         }
 

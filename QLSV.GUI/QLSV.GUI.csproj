@@ -151,6 +151,9 @@
     <EmbeddedResource Include="Forms\frmSinhVien.resx">
       <DependentUpon>frmSinhVien.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Forms\frmSVHome.resx">
+      <DependentUpon>frmSVHome.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
@@ -160,6 +163,7 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <None Include="Images\sv1.webp" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -183,9 +187,6 @@
       <Project>{681d5f27-6d0a-4e6a-aaee-15e2a1bd9545}</Project>
       <Name>QLSV.DAL</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Images\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
