@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Windows.Forms;
 using QLSV.DAL;
 using QLSV.GUI;
@@ -44,8 +45,23 @@ namespace QLSV.GUI
 
         private void menuDangKyHoc_Click(object sender, EventArgs e)
         {
-            new frmDangKyHoc(0).ShowDialog(); // truyền mã SV nếu muốn
+            // ✅ Dùng loại tài khoản để xác định vai trò thực ("Admin" / "GiangVien" / "SinhVien")
+            string role = tk.LoaiTK;
+
+            if (tk.MaSV.HasValue)
+            {
+                // Sinh viên đăng ký
+                new frmDangKyHoc(role, tk.MaSV.Value).ShowDialog();
+            }
+            else
+            {
+                // Admin hoặc giảng viên
+                new frmDangKyHoc(role, 0).ShowDialog();
+            }
         }
+
+
+
 
         private void menuDiem_Click(object sender, EventArgs e)
         {

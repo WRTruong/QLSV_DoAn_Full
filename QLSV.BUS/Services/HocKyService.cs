@@ -35,5 +35,10 @@ namespace QLSV.BUS.Services
             _db.SaveChanges();
             return true;
         }
+        public HocKy GetHocKyHienTai()
+        {
+            
+            return _db.HocKy.OrderByDescending(hk => hk.MaHK).FirstOrDefault();
+        }
     }
 }
