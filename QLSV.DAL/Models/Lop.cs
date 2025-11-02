@@ -27,6 +27,12 @@ namespace QLSV.DAL
         public int MaKhoa { get; set; }
 
         public virtual Khoa Khoa { get; set; }
+        public int? MaGV { get; set; }
+
+        [ForeignKey("MaGV")]
+        public virtual GiangVien GiangVien { get; set; }
+
+
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<LichHoc> LichHoc { get; set; }

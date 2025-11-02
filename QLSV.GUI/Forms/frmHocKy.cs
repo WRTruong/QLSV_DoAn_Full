@@ -3,7 +3,6 @@ using System.Windows.Forms;
 using QLSV.BUS.Services;
 using QLSV.DAL;
 
-
 namespace QLSV.GUI
 {
     public partial class frmHocKy : Form
@@ -24,9 +23,16 @@ namespace QLSV.GUI
 
         private void btnThem_Click(object sender, EventArgs e)
         {
+            if (string.IsNullOrWhiteSpace(txtTenHocKy.Text) || string.IsNullOrWhiteSpace(txtNamHoc.Text))
+            {
+                MessageBox.Show("Vui lòng nhập đầy đủ Tên học kỳ và Năm học!");
+                return;
+            }
+
             var hk = new HocKy
             {
                 TenHK = txtTenHocKy.Text,
+                NamHoc = txtNamHoc.Text
             };
 
             if (hkService.Add(hk))
@@ -34,20 +40,25 @@ namespace QLSV.GUI
                 MessageBox.Show("Thêm học kỳ thành công!");
                 LoadData();
                 txtTenHocKy.Clear();
-                txtMoTa.Clear();
+                txtNamHoc.Clear();
             }
-            else MessageBox.Show("Thất bại!");
+            else
+            {
+                MessageBox.Show("Thêm thất bại!");
+            }
         }
 
         private void btnSua_Click(object sender, EventArgs e)
         {
             if (dgvHocKy.CurrentRow == null) return;
 
-            int maHK = (int)dgvHocKy.CurrentRow.Cells["MaHK"].Value;
+            int maHK = Convert.ToInt32(dgvHocKy.CurrentRow.Cells["MaHK"].Value);
+
             var hk = new HocKy
             {
                 MaHK = maHK,
                 TenHK = txtTenHocKy.Text,
+                NamHoc = txtNamHoc.Text
             };
 
             if (hkService.Update(hk))
@@ -55,25 +66,33 @@ namespace QLSV.GUI
                 MessageBox.Show("Cập nhật thành công!");
                 LoadData();
             }
-            else MessageBox.Show("Thất bại!");
+            else
+            {
+                MessageBox.Show("Cập nhật thất bại!");
+            }
         }
 
         private void btnXoa_Click(object sender, EventArgs e)
         {
             if (dgvHocKy.CurrentRow == null) return;
 
-            int maHK = (int)dgvHocKy.CurrentRow.Cells["MaHK"].Value;
+            int maHK = Convert.ToInt32(dgvHocKy.CurrentRow.Cells["MaHK"].Value);
 
             if (hkService.Delete(maHK))
             {
                 MessageBox.Show("Xóa thành công!");
                 LoadData();
             }
-            else MessageBox.Show("Xóa thất bại!");
+            else
+            {
+                MessageBox.Show("Xóa thất bại!");
+            }
         }
 
         private void btnRefresh_Click(object sender, EventArgs e)
         {
+            txtTenHocKy.Clear();
+            txtNamHoc.Clear();
             LoadData();
         }
 
@@ -81,8 +100,8 @@ namespace QLSV.GUI
         {
             if (dgvHocKy.CurrentRow == null) return;
 
-            txtTenHocKy.Text = dgvHocKy.CurrentRow.Cells["TenHK"].Value.ToString();
-       
+            txtTenHocKy.Text = dgvHocKy.CurrentRow.Cells["TenHK"].Value?.ToString() ?? "";
+            txtNamHoc.Text = dgvHocKy.CurrentRow.Cells["NamHoc"].Value?.ToString() ?? "";
         }
     }
 }

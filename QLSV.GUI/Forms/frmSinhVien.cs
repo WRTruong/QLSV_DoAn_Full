@@ -115,19 +115,26 @@ namespace QLSV.GUI
             if (string.IsNullOrEmpty(sourcePath) || !File.Exists(sourcePath))
                 return null;
 
-            // 🔧 Lấy đường dẫn đến thư mục Images trong GUI (ra khỏi bin\Debug)
+            // Thư mục project gốc
             string projectRoot = Directory.GetParent(Application.StartupPath).Parent.FullName;
             string imagesFolder = Path.Combine(projectRoot, "Images");
 
+            // Thư mục chạy thực tế (bin\Debug\Images)
+            string debugFolder = Path.Combine(Application.StartupPath, "Images");
+
             if (!Directory.Exists(imagesFolder))
                 Directory.CreateDirectory(imagesFolder);
+            if (!Directory.Exists(debugFolder))
+                Directory.CreateDirectory(debugFolder);
 
             string fileName = Path.GetFileName(sourcePath);
-            string destPath = Path.Combine(imagesFolder, fileName);
+            string dest1 = Path.Combine(imagesFolder, fileName);
+            string dest2 = Path.Combine(debugFolder, fileName);
 
             try
             {
-                File.Copy(sourcePath, destPath, true);
+                File.Copy(sourcePath, dest1, true);
+                File.Copy(sourcePath, dest2, true);
             }
             catch (Exception ex)
             {
@@ -135,8 +142,9 @@ namespace QLSV.GUI
                 return null;
             }
 
-            return fileName; // Chỉ lưu tên file trong DB
+            return fileName;
         }
+
 
 
         private void btnThem_Click(object sender, EventArgs e)

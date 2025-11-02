@@ -26,6 +26,12 @@ namespace QLSV.DAL
 
         public int? SoTC { get; set; }
 
+        // Thêm MaKhoa (cho phép NULL)
+        public int? MaKhoa { get; set; }
+
+        // Quan h? v?i Khoa
+        [ForeignKey("MaKhoa")]
+        public virtual Khoa Khoa { get; set; }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<DangKyHoc> DangKyHoc { get; set; }

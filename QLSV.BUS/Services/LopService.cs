@@ -11,6 +11,11 @@ namespace QLSV.BUS.Services
         public List<Lop> GetAll() => _db.Lop.ToList();
 
         public Lop GetById(int maLop) => _db.Lop.Find(maLop);
+        public List<Lop> GetByGiangVien(int maGV)
+        {
+            return _db.Lop.Where(l => l.MaGV == maGV).ToList();
+        }
+
 
         public bool Add(Lop lop)
         {

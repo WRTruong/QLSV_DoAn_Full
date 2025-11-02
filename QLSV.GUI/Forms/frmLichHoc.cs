@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
 using QLSV.BUS.Services;
 using QLSV.DAL;
-
 
 namespace QLSV.GUI
 {
@@ -21,6 +19,7 @@ namespace QLSV.GUI
             InitializeComponent();
             LoadCombos();
             LoadData();
+            dgvLichHoc.SelectionChanged += DgvLichHoc_SelectionChanged;
         }
 
         private void LoadCombos()
@@ -45,21 +44,46 @@ namespace QLSV.GUI
         private void LoadData()
         {
             dgvLichHoc.DataSource = null;
-            dgvLichHoc.DataSource = lhService.GetAll();
+            var data = lhService.GetAll()
+                .Select(lh => new
+                {
+                    lh.MaLop,
+                    TenLop = lh.Lop?.TenLop ?? "",
+                    lh.MaMH,
+                    TenMH = lh.MonHoc?.TenMH ?? "",
+                    lh.MaGV,
+                    TenGV = lh.GiangVien?.HoTen ?? "",
+                    lh.MaHK,
+                    TenHK = lh.HocKy?.TenHK ?? "",
+                    lh.Thu,
+                    lh.TietBatDau,
+                    lh.SoTiet
+                }).ToList();
+
+            dgvLichHoc.DataSource = data;
+        }
+
+        private void DgvLichHoc_SelectionChanged(object sender, EventArgs e)
+        {
+            if (dgvLichHoc.CurrentRow == null) return;
+
+            var row = dgvLichHoc.CurrentRow;
+
+            cboLop.SelectedValue = row.Cells["MaLop"].Value;
+            cboMonHoc.SelectedValue = row.Cells["MaMH"].Value;
+            cboGiangVien.SelectedValue = row.Cells["MaGV"].Value;
+            cboHocKy.SelectedValue = row.Cells["MaHK"].Value;
+
+            txtThu.Text = row.Cells["Thu"].Value?.ToString() ?? "";
+            txtTietBD.Text = row.Cells["TietBatDau"].Value?.ToString() ?? "";
+            txtSoTiet.Text = row.Cells["SoTiet"].Value?.ToString() ?? "";
         }
 
         private void btnThem_Click(object sender, EventArgs e)
         {
-            // kiểm tra và parse TietBatDau
-            if (!int.TryParse(txtTietBD.Text, out int tietBD))
+            if (!int.TryParse(txtTietBD.Text, out int tietBD) || !int.TryParse(txtSoTiet.Text, out int soTiet))
             {
-                MessageBox.Show("Tiết bắt đầu phải là số nguyên!", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-
-            if (!int.TryParse(txtSoTiet.Text, out int soTiet))
-            {
-                MessageBox.Show("Số tiết phải là số nguyên!", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Tiết bắt đầu và Số tiết phải là số nguyên!", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
@@ -69,8 +93,8 @@ namespace QLSV.GUI
                 MaMH = Convert.ToInt32(cboMonHoc.SelectedValue),
                 MaGV = Convert.ToInt32(cboGiangVien.SelectedValue),
                 MaHK = Convert.ToInt32(cboHocKy.SelectedValue),
-                Thu = txtThu.Text,  // nếu Thu là string thì ok
-                TietBatDau = tietBD, // dùng giá trị đã parse
+                Thu = txtThu.Text,
+                TietBatDau = tietBD,
                 SoTiet = soTiet
             };
 
@@ -82,14 +106,13 @@ namespace QLSV.GUI
             else MessageBox.Show("Thất bại!");
         }
 
-
         private void btnXoa_Click(object sender, EventArgs e)
         {
             if (dgvLichHoc.CurrentRow == null) return;
 
-            int maLop = (int)dgvLichHoc.CurrentRow.Cells["MaLop"].Value;
-            int maMH = (int)dgvLichHoc.CurrentRow.Cells["MaMH"].Value;
-            int maHK = (int)dgvLichHoc.CurrentRow.Cells["MaHK"].Value;
+            int maLop = Convert.ToInt32(dgvLichHoc.CurrentRow.Cells["MaLop"].Value);
+            int maMH = Convert.ToInt32(dgvLichHoc.CurrentRow.Cells["MaMH"].Value);
+            int maHK = Convert.ToInt32(dgvLichHoc.CurrentRow.Cells["MaHK"].Value);
 
             if (lhService.Delete(maLop, maMH, maHK))
             {

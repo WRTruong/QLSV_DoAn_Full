@@ -83,31 +83,80 @@ namespace QLSV.GUI
                 return;
             }
 
-            var monHocChuaDK = dkService.GetMonHocChuaDangKy(maSV, maHK)
-                .Join(lhService.GetAll().Where(lh => lh.MaHK == maHK), m => m.MaMH, lh => lh.MaMH,
-                      (m, lh) => new
-                      {
-                          m.MaMH,
-                          m.TenMH,
-                          GiangVien = lh.GiangVien != null ? lh.GiangVien.HoTen : "Chưa có GV"
-                      }).ToList();
+            // Lấy thông tin lớp và khoa của sinh viên
+            var sv = svService.GetById(maSV);
+            var lopSV = sv?.Lop;
+            var khoaSV = lopSV?.Khoa;
+
+            if (khoaSV == null)
+            {
+                cboMonHoc.DataSource = null;
+                return;
+            }
+
+            // Lấy tất cả môn học trong học kỳ của khoa/lớp sinh viên
+            var allMH = lhService.GetAll()
+                .Where(lh => lh.MaHK == maHK && lh.MonHoc.MaKhoa == khoaSV.MaKhoa)
+                .Select(lh => lh.MonHoc)
+                .Distinct()
+                .ToList();
+
+            // Lấy danh sách môn đã đăng ký
+            var monHocDaDK = dkService.GetDangKyTheoQuyen(userRole, maSV, maHK)
+                .Select(dk => dk.MonHoc)
+                .ToList();
+
+            // Chỉ lấy môn chưa đăng ký
+            var monHocChuaDK = allMH
+                .Where(m => !monHocDaDK.Any(d => d.MaMH == m.MaMH))
+                .ToList();
+
+            // Nếu Admin thêm môn riêng cho SV, cũng lấy thêm
+            if (userRole == "Admin")
+            {
+                var monHocAdmin = dkService.GetAll()
+                    .Where(dk => dk.MaSV == maSV && dk.MaHK == maHK)
+                    .Select(dk => dk.MonHoc)
+                    .Where(m => m != null && !monHocChuaDK.Contains(m))
+                    .ToList();
+
+                monHocChuaDK.AddRange(monHocAdmin);
+            }
 
             cboMonHoc.DataSource = monHocChuaDK.Count > 0 ? monHocChuaDK : null;
             cboMonHoc.DisplayMember = "TenMH";
             cboMonHoc.ValueMember = "MaMH";
         }
 
+
         private void LoadDangKy()
         {
             int maSV = GetSelectedSinhVien();
             int maHK = GetSelectedHocKy();
 
-            var dsDangKy = dkService.GetDangKyTheoQuyen(userRole,
-                userRole == "Admin" ? maSV : (int?)maSV,
-                maHK);
+            if (maSV == 0)
+            {
+                dgvDangKy.DataSource = null;
+                return;
+            }
 
-            var lichHocHK = lhService.GetAll().Where(lh => maHK == 0 || lh.MaHK == maHK).ToList();
+            // Lấy tất cả đăng ký của sinh viên (bỏ qua quyền admin ở đây)
+            var dsDangKy = dkService.GetAll()
+                .Where(dk => dk.MaSV == maSV && (maHK == 0 || dk.MaHK == maHK))
+                .ToList();
 
+            if (dsDangKy.Count == 0)
+            {
+                dgvDangKy.DataSource = null;
+                return;
+            }
+
+            // Lấy lịch học của học kỳ
+            var lichHocHK = lhService.GetAll()
+                .Where(lh => maHK == 0 || lh.MaHK == maHK)
+                .ToList();
+
+            // Join để hiển thị tên môn và giảng viên
             var ds = (from dk in dsDangKy
                       join lh in lichHocHK on dk.MaMH equals lh.MaMH into lhGroup
                       from lh in lhGroup.DefaultIfEmpty()
@@ -121,8 +170,11 @@ namespace QLSV.GUI
                           dk.MaHK
                       }).ToList();
 
-            dgvDangKy.DataSource = ds.Count > 0 ? ds : null;
+            dgvDangKy.DataSource = ds;
         }
+
+
+
 
         private void btnDangKy_Click(object sender, EventArgs e)
         {

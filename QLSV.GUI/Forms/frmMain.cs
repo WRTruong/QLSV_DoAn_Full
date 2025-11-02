@@ -65,13 +65,37 @@ namespace QLSV.GUI
 
         private void menuDiem_Click(object sender, EventArgs e)
         {
-            new frmDiem().ShowDialog();
+            string role = tk.LoaiTK;
+
+            if (role == "Admin")
+            {
+                new frmDiem("Admin").ShowDialog();
+            }
+            else if (role == "GiangVien" && tk.MaGV.HasValue)
+            {
+                // Giảng viên: truyền role và MaGV
+                new frmDiem("GiangVien", null, tk.MaGV.Value).ShowDialog();
+            }
+            else if (role == "SinhVien" && tk.MaSV.HasValue)
+            {
+                // Sinh viên: truyền role và MaSV
+                new frmDiem("SinhVien", tk.MaSV.Value).ShowDialog();
+            }
         }
+
 
         private void menuThongBao_Click(object sender, EventArgs e)
         {
-            new frmThongBao().ShowDialog();
+            string role = tk.LoaiTK;
+            if (role == "GiangVien" && tk.MaGV.HasValue)
+                new frmThongBao(role, null, tk.MaGV.Value).ShowDialog();
+            else if (role == "SinhVien" && tk.MaSV.HasValue)
+                new frmThongBao(role, tk.MaSV.Value).ShowDialog();
+            else
+                new frmThongBao(role).ShowDialog(); // Admin
         }
+
+
 
         private void menuHocKy_Click(object sender, EventArgs e)
         {
@@ -93,5 +117,37 @@ namespace QLSV.GUI
         {
             Application.Exit();
         }
+        
+
+        private void frmMain_Load(object sender, EventArgs e)
+        {
+            string role = tk.LoaiTK?.Trim();
+            MessageBox.Show($"Username: {tk.Username}\nRole: {role}");
+
+            // Ẩn menu mặc định
+            menuKhoa.Visible = menuLop.Visible = menuGiangVien.Visible = menuMonHoc.Visible = menuSinhVien.Visible = false;
+            menuDangKyHoc.Visible = menuDiem.Visible = menuHocKy.Visible = menuLichHoc.Visible = menuThongBao.Visible = false;
+
+            if (role == "Admin")
+            {
+                menuKhoa.Visible = menuLop.Visible = menuGiangVien.Visible = menuMonHoc.Visible = menuSinhVien.Visible = true;
+                menuDangKyHoc.Visible = menuDiem.Visible = menuHocKy.Visible = menuLichHoc.Visible = menuThongBao.Visible = true;
+            }
+            else if (role == "GiangVien")
+            {
+                menuDangKyHoc.Visible = false;
+                menuDiem.Visible = true;
+                menuThongBao.Visible = true;
+                menuLichHoc.Visible = true;
+            }
+            else if (role == "SinhVien")
+            {
+                menuDangKyHoc.Visible = true;
+                menuDiem.Visible = true;
+                menuThongBao.Visible = true;
+                menuLichHoc.Visible = true;
+            }
+        }
+
     }
 }

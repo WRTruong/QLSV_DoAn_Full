@@ -45,5 +45,13 @@ namespace QLSV.BUS.Services
             _db.SaveChanges();
             return true;
         }
+        public List<MonHoc> GetMonHocByGiangVien(int maGV)
+        {
+            return _db.LichHoc
+                      .Where(lh => lh.MaGV == maGV)
+                      .Select(lh => lh.MonHoc)
+                      .Distinct()
+                      .ToList();
+        }
     }
 }
